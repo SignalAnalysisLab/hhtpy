@@ -46,8 +46,6 @@ axs[-1].set_xlabel('Time [s]')
 axs[0].set_ylabel('Original\nSignal')
 axs[0].set_xticks([])
 
-print('is residue', is_monotonic(emd.imfs[-1]))
-
 for i in range(1, len(emd.imfs) + 1):
     axs[i].set_ylabel(f'IMF {i}')
     axs[i].set_xticks([])
