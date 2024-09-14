@@ -36,7 +36,7 @@ t = n / f_s  # sec
 
 y = (
         0.3 * np.cos(2 * np.pi * 5 * t ** 2) +
-        2 * np.array(np.cos(2 * np.pi * 1 * t)) +
+        2 * np.cos(2 * np.pi * 1 * t) +
         1 * t
 )
 
