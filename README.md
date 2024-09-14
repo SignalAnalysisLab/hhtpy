@@ -56,7 +56,7 @@ axs[-1].set_ylabel('Residue')
 
 plt.show()
 ```
-![Plot of IMFs](figs/IMFs.png)
+![Plot of IMFs](figs/imfs.png)
 
 ## API Reference
 
