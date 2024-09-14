@@ -25,17 +25,19 @@ Here's a basic example of how to use **hhtpy** to perform EMD on a signal:
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
+from hhtpy import EmpiricalModeDecomposition
 from hhtpy.plot import plot_imfs
 
+
 T = 5  # sec
-f_s = 15000 # Hz
+f_s = 15000  # Hz
 n = np.arange(T * f_s)
-t = n / f_s # sec
+t = n / f_s  # sec
 
 y = (
-        0.3*np.cos(2 * np.pi * 5 * t**2) +
-        2*np.array(np.cos(2 * np.pi * 1 * t)) +
-        0.5 * t
+        0.3 * np.cos(2 * np.pi * 5 * t ** 2) +
+        2 * np.array(np.cos(2 * np.pi * 1 * t)) +
+        1 * t
 )
 
 emd = EmpiricalModeDecomposition(y)
@@ -46,18 +48,15 @@ axs[-1].set_xlabel('Time [s]')
 axs[0].set_ylabel('Original\nSignal')
 axs[0].set_xticks([])
 
-print('is residue', is_monotonic(emd.imfs[-1]))
-
 for i in range(1, len(emd.imfs) + 1):
     axs[i].set_ylabel(f'IMF {i}')
     axs[i].set_xticks([])
 
 axs[-1].set_ylabel('Residue')
 
-fig.tight_layout()
-
 plt.show()
 ```
+![Plot of IMFs](figs/IMFs.png)
 
 ## API Reference
 
