@@ -116,10 +116,19 @@ emd.set_stopping_criterion(custom_stopping_criterion)
 - **Lars Havstand**
 - **Geir Kulia**
 
-## Acknowledgments
+## Acknowledgements
 
-- This library is based on the principles of the Empirical Mode Decomposition algorithm used in signal processing.
-- Special thanks to the contributors and the scientific community for their valuable insights.
+We want to express our sincere gratitude to the following individuals for their invaluable contributions and support throughout this project:
+
+- **Professor Norden Huang**: For his extensive one-on-one lectures over ten days, during which he taught us the Hilbert-Huang Transform (HHT) and guided us through the nuances of implementing it. Many of the insights and implementation techniques used in this project directly result from these invaluable sessions.
+
+- **Professor Marta Molinas**: To introduce us to the HHT methodology, provide foundational knowledge, and engage in valuable discussions about the implementation. Her guidance has been instrumental in shaping our understanding and approach.
+
+- **Professor Olav B. Fosso**: For his numerous fruitful dialogues on improving and optimizing the algorithm. His insights have greatly influenced the refinement of our implementation.
+
+- **Sumit Kumar Ram (@sumitram)**: For explaining the HHT algorithm to me for the first time. His clear and concise explanation provided the initial spark that fueled our deeper exploration of the method.
+
+Thank you all for your expertise, time, and mentorship, which made this work possible.
 
 ## Contributing
 
