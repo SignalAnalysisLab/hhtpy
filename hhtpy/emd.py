@@ -66,12 +66,13 @@ class EmpiricalModeDecomposition:
             residue -= imf
             self._imfs.append(imf)
 
-            if is_imf(residue):
-                self._imfs.append(residue)
-                break
-
+            # Always check if the residue before checking for IMF
             if is_monotonic(residue):
                 self._residue = residue
+                break
+
+            if is_imf(residue):
+                self._imfs.append(residue)
                 break
 
     def set_stopping_criterion(self, stopping_criterion_func: Callable[
