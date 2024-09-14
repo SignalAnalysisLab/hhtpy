@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_imfs(imfs: np.ndarray, signal: np.ndarray=None, residue: np.ndarray=None, x_axis: np.ndarray=None, show_plot: bool=True, save_path: str=None):
+
+def plot_imfs(imfs: np.ndarray, signal: np.ndarray = None, residue: np.ndarray = None, x_axis: np.ndarray = None,
+              show_plot: bool = True, save_path: str = None):
     """
     Plot the IMFs and the _residue of the EMD decomposition.
 
