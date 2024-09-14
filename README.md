@@ -116,10 +116,6 @@ emd.set_stopping_criterion(custom_stopping_criterion)
 - **Lars Havstand**
 - **Geir Kulia**
 
-## License
-
-*Specify the license under which the code is released (e.g., MIT License).*
-
 ## Acknowledgments
 
 - This library is based on the principles of the Empirical Mode Decomposition algorithm used in signal processing.
