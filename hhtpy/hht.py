@@ -188,7 +188,7 @@ FrequencyCalculationMethod = Callable[[np.ndarray, float], np.ndarray]
 AmplitudeCalculationMethod = Callable[[np.ndarray], np.ndarray]
 
 
-def hilber_huang_transform(
+def hilbert_huang_transform(
     signal: np.ndarray,
     sampling_frequency: float,
     frequency_calculation_method: FrequencyCalculationMethod = calculate_instantaneous_frequency_quadrature,
