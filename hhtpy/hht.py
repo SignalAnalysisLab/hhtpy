@@ -187,11 +187,15 @@ def _calculate_quadrature(monocomponent: np.ndarray) -> np.ndarray:
     return quadrature
 
 
+FrequencyCalculationMethod = Callable[[np.ndarray, float], np.ndarray]
+AmplitudeCalculationMethod = Callable[[np.ndarray], np.ndarray]
+
+
 def hilber_huang_transform(
     signal: np.ndarray,
     sampling_frequency: float,
-    frequency_caulculation_method: Callable = calculate_instantaneous_frequency_quadrature,
-    amplitude_calculation_method: Callable = calculate_instantaneous_amplitude_spline,
+    frequency_calculation_method: FrequencyCalculationMethod = calculate_instantaneous_frequency_quadrature,
+    amplitude_calculation_method: AmplitudeCalculationMethod = calculate_instantaneous_amplitude_spline,
 ) -> (list[IntrinsicModeFunction], np.ndarray):
     """
     Perform the Hilbert-Huang Transform on the input signal.
@@ -201,7 +205,7 @@ def hilber_huang_transform(
         signal (np.ndarray): Input signal.
         sampling_frequency (float): Sampling frequency of the signal.
         amplitude_calculation_method:
-        frequency_caulculation_method:
+        frequency_calculation_method:
 
     Returns:
         np.ndarray: Instantaneous frequency array.
@@ -212,7 +216,7 @@ def hilber_huang_transform(
     return [
         IntrinsicModeFunction(
             signal=imf,
-            instantaneous_frequency=frequency_caulculation_method(
+            instantaneous_frequency=frequency_calculation_method(
                 imf, sampling_frequency
             ),
             instantaneous_amplitude=amplitude_calculation_method(imf),
