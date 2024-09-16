@@ -42,12 +42,12 @@ def decompose(
     imfs: List[np.ndarray] = []
 
     for i in range(max_imfs):
+        if is_monotonic(residue):
+            break
+
         if is_imf(residue):
             imfs.append(residue)
             residue = np.zeros_like(residue)
-            break
-
-        if is_monotonic(residue):
             break
 
         mode = residue
