@@ -9,15 +9,13 @@ class TestEMDAndPlotting(unittest.TestCase):
 
     def setUp(self):
         # Create the sample data used in the original code
-        self.T = 5  # sec
-        self.f_s = 15000  # Hz
-        self.n = np.arange(self.T * self.f_s)
-        self.t = self.n / self.f_s  # sec
+        T = 5  # sec
+        f_s = 15000  # Hz
+        n = np.arange(T * f_s)
+        t = n / f_s  # sec
 
         self.y = (
-            0.3 * np.cos(2 * np.pi * 5 * self.t**2)
-            + 2 * np.cos(2 * np.pi * 1 * self.t)
-            + 1 * self.t
+            0.3 * np.cos(2 * np.pi * 5 * t**2) + 2 * np.cos(2 * np.pi * 1 * t) + 1 * t
         )
 
     def test_emd_decomposition(self):
