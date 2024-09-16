@@ -5,13 +5,15 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy.ndimage import median_filter
 from hhtpy._emd_utils import find_local_extrema
-from hhtpy.emd import EmpiricalModeDecomposition
+from hhtpy.emd import decompose
+
 
 @dataclass
-class IntrinsecModeFunction:
+class IntrinsicModeFunction:
     """
     Dataclass to store the intrinsic mode function (IMF) and its instantaneous frequency.
     """
+
     signal: np.ndarray
     instantaneous_frequency: np.ndarray
     instantaneous_amplitude: np.ndarray
@@ -19,10 +21,10 @@ class IntrinsecModeFunction:
 
 
 def calculate_instantaneous_frequency_quadrature(
-        imf: np.ndarray,
-        sampling_frequency: float,
-        normalize: bool = True,
-        median_filter_window_pct: float = 0.05
+    imf: np.ndarray,
+    sampling_frequency: float,
+    normalize: bool = True,
+    median_filter_window_pct: float = 0.05,
 ) -> np.ndarray:
     """
     Calculate the instantaneous frequency using the quadrature method.
@@ -44,7 +46,9 @@ def calculate_instantaneous_frequency_quadrature(
         imf = normalize_imf(imf, max_attempts=150)
 
     frequency = quadrature_method(imf, sampling_frequency)
-    frequency = median_filter(frequency, size=int(sampling_frequency * median_filter_window_pct))
+    frequency = median_filter(
+        frequency, size=int(sampling_frequency * median_filter_window_pct)
+    )
 
     return frequency
 
@@ -63,15 +67,15 @@ def normalize_imf(imf: np.ndarray, max_attempts: int) -> np.ndarray:
     Raises:
         ValueError: If the maximum value of the IMF remains greater than 1 after max_attempts.
     """
-    for attempt in np.arange(max_attempts):
+    for _ in np.arange(max_attempts):
         if np.max(imf) <= 1:
             break
 
         imf /= calculate_instantaneous_amplitude_spline(imf)
     else:
         raise ValueError(
-            f'Normalization of the IMF failed after {max_attempts} attempts. '
-            f'Maximum value is still greater than 1 (current max: {np.max(imf):.3f}).'
+            f"Normalization of the IMF failed after {max_attempts} attempts. "
+            f"Maximum value is still greater than 1 (current max: {np.max(imf):.3f})."
         )
 
     return imf
@@ -102,15 +106,20 @@ def _quadrature_phase(monocomponent_normalized: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: Quadrature phase :math:`\\theta(t)`.
     """
-    assert isinstance(monocomponent_normalized, np.ndarray), "Input must be a NumPy array."
-    assert np.all(np.abs(monocomponent_normalized) <= 1), "Input values must be normalized between -1 and 1."
+    if not isinstance(monocomponent_normalized, np.ndarray):
+        raise ValueError("Input must be a NumPy array.")
+
+    if not np.all(np.abs(monocomponent_normalized) <= 1):
+        raise ValueError("Input values must be normalized between -1 and 1.")
 
     quadrature = _calculate_quadrature(monocomponent_normalized)
     z = monocomponent_normalized + 1j * quadrature
     return np.angle(z)
 
 
-def quadrature_method(monocomponent_normalized: np.ndarray, sampling_frequency: float) -> np.ndarray:
+def quadrature_method(
+    monocomponent_normalized: np.ndarray, sampling_frequency: float
+) -> np.ndarray:
     """
     Calculates the instantaneous frequency using the quadrature method.
 
@@ -131,9 +140,15 @@ def quadrature_method(monocomponent_normalized: np.ndarray, sampling_frequency: 
     Returns:
         np.ndarray: Instantaneous frequency.
     """
-    assert isinstance(monocomponent_normalized, np.ndarray), "Input must be a NumPy array."
-    assert isinstance(sampling_frequency, (int, float)), "Sampling frequency must be a float or integer."
-    assert np.all(np.abs(monocomponent_normalized) <= 1), "Input values must be normalized between -1 and 1."
+    assert isinstance(
+        monocomponent_normalized, np.ndarray
+    ), "Input must be a NumPy array."
+    assert isinstance(
+        sampling_frequency, (int, float)
+    ), "Sampling frequency must be a float or integer."
+    assert np.all(
+        np.abs(monocomponent_normalized) <= 1
+    ), "Input values must be normalized between -1 and 1."
 
     phase = _quadrature_phase(monocomponent_normalized)
     frequency = sampling_frequency / (2 * np.pi) * np.abs(np.gradient(phase))
@@ -157,7 +172,9 @@ def _calculate_quadrature(monocomponent: np.ndarray) -> np.ndarray:
         np.ndarray: Quadrature :math:`q(t)`.
     """
     assert isinstance(monocomponent, np.ndarray), "Input must be a NumPy array."
-    assert np.all(np.abs(monocomponent) <= 1), "Input values must be normalized between -1 and 1."
+    assert np.all(
+        np.abs(monocomponent) <= 1
+    ), "Input values must be normalized between -1 and 1."
 
     # Calculate the sign based on the derivative of the signal
     sign = np.zeros_like(monocomponent)
@@ -165,36 +182,41 @@ def _calculate_quadrature(monocomponent: np.ndarray) -> np.ndarray:
     sign[-1] = sign[-2]  # Handle the last element by copying the second last
 
     # Calculate the quadrature with numerical stability (handling small values)
-    quadrature = sign * np.sqrt(np.maximum(0, 1 - monocomponent ** 2))
+    quadrature = sign * np.sqrt(np.maximum(0, 1 - monocomponent**2))
 
     return quadrature
 
 
-def hilber_huang_transform(signal: np.ndarray, sampling_frequency: float,
-                           frequency_caulculation_method: Callable = calculate_instantaneous_frequency_quadrature,
-                           amplitude_calculation_method: Callable = calculate_instantaneous_amplitude_spline
-                           ) -> np.ndarray:
+def hilber_huang_transform(
+    signal: np.ndarray,
+    sampling_frequency: float,
+    frequency_caulculation_method: Callable = calculate_instantaneous_frequency_quadrature,
+    amplitude_calculation_method: Callable = calculate_instantaneous_amplitude_spline,
+) -> (list[IntrinsicModeFunction], np.ndarray):
     """
     Perform the Hilbert-Huang Transform on the input signal.
 
     Parameters:
+
         signal (np.ndarray): Input signal.
         sampling_frequency (float): Sampling frequency of the signal.
+        amplitude_calculation_method:
+        frequency_caulculation_method:
 
     Returns:
         np.ndarray: Instantaneous frequency array.
     """
-    emd = EmpiricalModeDecomposition(signal)
-    emd.decompose()
 
-    imfs = ()
+    imfs, residue = decompose(signal)
 
-    for imf in emd.imfs:
-        imfs += (IntrinsecModeFunction(
+    return [
+        IntrinsicModeFunction(
             signal=imf,
-            instantaneous_frequency=frequency_caulculation_method(imf, sampling_frequency),
+            instantaneous_frequency=frequency_caulculation_method(
+                imf, sampling_frequency
+            ),
             instantaneous_amplitude=amplitude_calculation_method(imf),
-            sampling_frequency=sampling_frequency
-        ),)
-
-    return imfs, emd.residue
+            sampling_frequency=sampling_frequency,
+        )
+        for imf in imfs
+    ], residue
