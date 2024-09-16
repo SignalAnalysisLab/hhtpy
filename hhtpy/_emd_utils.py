@@ -1,12 +1,35 @@
-import numpy as np
-
 from scipy.signal import find_peaks
 from numpy.typing import ArrayLike
 from typing import Tuple
+from typing import Union, List
+import numpy as np
+from scipy.interpolate import CubicSpline as CubicSpline
 
 
-def include_endpoints_in_extrema(x_extrema: np.ndarray, data: np.ndarray, extrema_type: str) -> Tuple[
-    np.ndarray, np.ndarray]:
+def sift(mode: Union[List[float], np.ndarray]):
+    """
+    TODO: Document the sifting process here. What part does it play in the EMD algorithm?
+    """
+    maxima_indices, minima_indices = find_local_extrema(mode)
+    x_max, y_max = include_endpoints_in_extrema(
+        maxima_indices, mode, extrema_type="maxima"
+    )
+    x_min, y_min = include_endpoints_in_extrema(
+        minima_indices, mode, extrema_type="minima"
+    )
+
+    n = np.arange(len(mode))
+    upper_envelope = CubicSpline(x_max, y_max)(n)
+    lower_envelope = CubicSpline(x_min, y_min)(n)
+
+    mean_envelope = 0.5 * (upper_envelope + lower_envelope)
+
+    return mode - mean_envelope
+
+
+def include_endpoints_in_extrema(
+    x_extrema: np.ndarray, data: np.ndarray, extrema_type: str
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Include the start and end points in the extrema indices and values,
     correcting for end effects in cubic spline interpolation.
@@ -19,7 +42,7 @@ def include_endpoints_in_extrema(x_extrema: np.ndarray, data: np.ndarray, extrem
     Returns:
         Tuple[np.ndarray, np.ndarray]: Updated x_extrema and y_extrema with end points included.
     """
-    if extrema_type not in ['maxima', 'minima']:
+    if extrema_type not in ["maxima", "minima"]:
         raise ValueError("extrema_type must be 'maxima' or 'minima'.")
 
     y_extrema = data[x_extrema]
@@ -33,7 +56,7 @@ def include_endpoints_in_extrema(x_extrema: np.ndarray, data: np.ndarray, extrem
             predicted_value = linear_interpolation_at_x(
                 x_value=0,
                 point_1=(x_extrema[0], y_extrema[0]),
-                point_2=(x_extrema[1], y_extrema[1])
+                point_2=(x_extrema[1], y_extrema[1]),
             )
             x_extrema = np.insert(x_extrema, 0, 0)
             y_extrema = np.insert(y_extrema, 0, predicted_value)
@@ -44,7 +67,7 @@ def include_endpoints_in_extrema(x_extrema: np.ndarray, data: np.ndarray, extrem
             predicted_value = linear_interpolation_at_x(
                 x_value=data_length - 1,
                 point_1=(x_extrema[-2], y_extrema[-2]),
-                point_2=(x_extrema[-1], y_extrema[-1])
+                point_2=(x_extrema[-1], y_extrema[-1]),
             )
             x_extrema = np.append(x_extrema, data_length - 1)
             y_extrema = np.append(y_extrema, predicted_value)
@@ -68,7 +91,9 @@ def include_endpoints_in_extrema(x_extrema: np.ndarray, data: np.ndarray, extrem
     return x_extrema, y_extrema
 
 
-def linear_interpolation_at_x(x_value: float, point_1: Tuple[float, float], point_2: Tuple[float, float]) -> float:
+def linear_interpolation_at_x(
+    x_value: float, point_1: Tuple[float, float], point_2: Tuple[float, float]
+) -> float:
     """
     Perform linear interpolation between two points.
 
@@ -87,7 +112,9 @@ def linear_interpolation_at_x(x_value: float, point_1: Tuple[float, float], poin
 
     # Ensure that x1 != x2 to avoid division by zero
     if x1 == x2:
-        raise ValueError("x-coordinates of point_1 and point_2 must be different for interpolation.")
+        raise ValueError(
+            "x-coordinates of point_1 and point_2 must be different for interpolation."
+        )
 
     # Perform linear interpolation using numpy
     return np.interp(x_value, [x1, x2], [y1, y2])
@@ -112,13 +139,16 @@ def get_extrema_indices(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     minima_indices = np.where(minima_indices)[0] + 1
 
     # Handle equal points (saddle points)
-    maxima_indices, minima_indices = handle_saddle_points(data, maxima_indices, minima_indices)
+    maxima_indices, minima_indices = handle_saddle_points(
+        data, maxima_indices, minima_indices
+    )
 
     return np.sort(maxima_indices), np.sort(minima_indices)
 
 
-def handle_saddle_points(data: np.ndarray, maxima_indices: np.ndarray, minima_indices: np.ndarray) -> Tuple[
-    np.ndarray, np.ndarray]:
+def handle_saddle_points(
+    data: np.ndarray, maxima_indices: np.ndarray, minima_indices: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Handle saddle points where adjacent values in the _signal_normalized are equal.
 
@@ -150,7 +180,9 @@ def is_monotonic(signal: ArrayLike) -> bool:
     return np.all(diff >= 0) or np.all(diff <= 0)
 
 
-def is_imf(signal: ArrayLike, tolerance: float=0.01, strick_mode: bool=False) -> bool:
+def is_imf(
+    signal: ArrayLike, tolerance: float = 0.01, strick_mode: bool = False
+) -> bool:
     """
     Check if the input array satisfies the criteria for an Intrinsic Mode Function (IMF).
 
@@ -193,8 +225,12 @@ def is_imf(signal: ArrayLike, tolerance: float=0.01, strick_mode: bool=False) ->
         from scipy.interpolate import CubicSpline
 
         maxima_indices, minima_indices = find_local_extrema(signal)
-        x_max, y_max = include_endpoints_in_extrema(maxima_indices, signal, extrema_type='maxima')
-        x_min, y_min = include_endpoints_in_extrema(minima_indices, signal, extrema_type='minima')
+        x_max, y_max = include_endpoints_in_extrema(
+            maxima_indices, signal, extrema_type="maxima"
+        )
+        x_min, y_min = include_endpoints_in_extrema(
+            minima_indices, signal, extrema_type="minima"
+        )
 
         n = np.arange(len(signal))
         upper_envelope = CubicSpline(x_max, y_max)(n)
@@ -205,8 +241,10 @@ def is_imf(signal: ArrayLike, tolerance: float=0.01, strick_mode: bool=False) ->
         # Check if the mean envelope is approximately zero
         mean_abs = np.abs(mean_envelope)
         signal_amplitude = np.abs(signal)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            normalized_mean = np.where(signal_amplitude != 0, mean_abs / signal_amplitude, 0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            normalized_mean = np.where(
+                signal_amplitude != 0, mean_abs / signal_amplitude, 0
+            )
 
         if np.max(normalized_mean) > tolerance:
             return False
