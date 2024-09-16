@@ -1,12 +1,3 @@
-# -------------------------
-# Copyright (C) Signal Analysis Lab AS - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential
-# Written by Signal Analysis Lab AS, June 2017
-# -------------------------
-
-import sys
-import time
 from copy import copy
 import matplotlib.pylab as plt
 import numpy as np
