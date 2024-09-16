@@ -140,15 +140,12 @@ def quadrature_method(
     Returns:
         np.ndarray: Instantaneous frequency.
     """
-    assert isinstance(
-        monocomponent_normalized, np.ndarray
-    ), "Input must be a NumPy array."
-    assert isinstance(
-        sampling_frequency, (int, float)
-    ), "Sampling frequency must be a float or integer."
-    assert np.all(
-        np.abs(monocomponent_normalized) <= 1
-    ), "Input values must be normalized between -1 and 1."
+    if not isinstance(monocomponent_normalized, np.ndarray):
+        raise ValueError("Input must be a NumPy array.")
+    if not isinstance(sampling_frequency, (int, float)):
+        raise ValueError("Sampling frequency must be a float or integer.")
+    if not np.all(np.abs(monocomponent_normalized) <= 1):
+        raise ValueError("Input values must be normalized between -1 and 1.")
 
     phase = _quadrature_phase(monocomponent_normalized)
     frequency = sampling_frequency / (2 * np.pi) * np.abs(np.gradient(phase))
@@ -171,10 +168,10 @@ def _calculate_quadrature(monocomponent: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: Quadrature :math:`q(t)`.
     """
-    assert isinstance(monocomponent, np.ndarray), "Input must be a NumPy array."
-    assert np.all(
-        np.abs(monocomponent) <= 1
-    ), "Input values must be normalized between -1 and 1."
+    if not isinstance(monocomponent, np.ndarray):
+        raise ValueError("Input must be a NumPy array.")
+    if not np.all(np.abs(monocomponent) <= 1):
+        raise ValueError("Input values must be normalized between -1 and 1.")
 
     # Calculate the sign based on the derivative of the signal
     sign = np.zeros_like(monocomponent)
