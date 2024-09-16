@@ -1,1 +1,1 @@
-from emd import decompose
+from .emd import decompose

@@ -1,7 +1,7 @@
 from typing import List
 import numpy as np
 from hhtpy._emd_utils import is_monotonic, is_imf, sift
-from sift_stopping_criteria import (
+from .sift_stopping_criteria import (
     get_stopping_criterion_fixed_number_of_sifts,
     SiftStoppingCriterion,
 )
