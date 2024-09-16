@@ -184,7 +184,7 @@ def _calculate_quadrature(monocomponent: np.ndarray) -> np.ndarray:
     return quadrature
 
 
-def hilber_huang_transform(
+def hilbert_huang_transform(
     signal: np.ndarray,
     sampling_frequency: float,
     frequency_caulculation_method: Callable = calculate_instantaneous_frequency_quadrature,
