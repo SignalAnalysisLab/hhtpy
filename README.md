@@ -26,37 +26,32 @@ Here's a basic example of how to use **hhtpy** to perform EMD on a signal:
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from hhtpy import decompose
-from hhtpy.plot import plot_imfs
+from hhtpy import hilbert_huang_transform
+from hhtpy.plot import plot_imfs, plot_hilbert_spectrum
+
 
 T = 5  # sec
 f_s = 15000  # Hz
 n = np.arange(T * f_s)
 t = n / f_s  # sec
 
-y = (
-        0.3 * np.cos(2 * np.pi * 5 * t ** 2) +
-        2 * np.cos(2 * np.pi * 1 * t) +
-        1 * t
+y = 1 * np.cos(2 * np.pi * 50 * t + 20 * np.sin(2 * np.pi * 0.5 * t)) + 2 * np.cos(
+    2 * np.pi * 20 * t
 )
 
-imfs, residue = decompose(y)
+imfs, residue = hilbert_huang_transform(y, f_s)
 
-fig, axs = plot_imfs(imfs, y, residue, x_axis=t, show_plot=False)
-axs[-1].set_xlabel('Time [s]')
-axs[0].set_ylabel('Original\nSignal')
-axs[0].set_xticks([])
-
-for i in range(1, len(imfs) + 1):
-    axs[i].set_ylabel(f'IMF {i}')
-    axs[i].set_xticks([])
-
-axs[-1].set_ylabel('Residue')
-
-plt.show()
+fig, axs = plot_imfs(imfs, y, residue, t, max_number_of_imfs=2)
 ```
-
 ![Plot of IMFs](figs/imfs.png)
+```
+fig, ax, clb = plot_hilbert_spectrum(
+    imfs,
+    max_number_of_imfs=2,
+)
+```
+![Plot Hilbert Spectrum](figs/hilbert_spectrum.png)
+
 
 ## API Reference
 
