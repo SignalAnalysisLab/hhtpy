@@ -44,13 +44,18 @@ imfs, residue = hilbert_huang_transform(y, f_s)
 fig, axs = plot_imfs(imfs, y, residue, t, max_number_of_imfs=2)
 ```
 ![Plot of IMFs](figs/imfs.png)
-```
+```python
 fig, ax, clb = plot_hilbert_spectrum(
     imfs,
     max_number_of_imfs=2,
 )
 ```
 ![Plot Hilbert Spectrum](figs/hilbert_spectrum.png)
+
+```python
+fig, ax = plot_marginal_hilbert_spectrum(imfs)
+```
+![Plot marginal Hilbert spectrum](figs/marginal_hilbert_spectrum.png)
 
 ### Custom Stopping Criterion
 
