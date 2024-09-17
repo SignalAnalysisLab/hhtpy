@@ -3,55 +3,54 @@ import numpy as np
 from matplotlib import colors
 from matplotlib.collections import LineCollection
 from hhtpy import IntrinsicModeFunction
+from dataclasses import dataclass, field
 
-from typing import Union
+from typing import Union, Optional, Any
+
+
+@dataclass
+class HilbertSpectrumConfig:
+    time_variable: Optional[np.ndarray] = None
+    log_color: bool = True
+    log_freq: bool = False
+    min_amplitude_lim: float = 1e-2
+    amplitude_unit: Optional[str] = None
+    max_number_of_imfs: Optional[int] = None
+    fig: Optional[Any] = None
+    ax: Optional[Any] = None
 
 
 def plot_hilbert_spectrum(
     imfs: list[IntrinsicModeFunction],
-    time_variable: np.ndarray = None,
-    log_color=True,
-    log_freq=False,
-    min_amplitude_lim=1e-2,
-    amplitude_unit=None,
-    max_number_of_imfs=None,
-    fig=None,
-    ax=None,
+    config: HilbertSpectrumConfig = HilbertSpectrumConfig(),
 ):
     """
     Hilbert spectrum plotting time-frequency against amplitude/power [Huang98]_.
 
     Args:
         imfs (list[IntrinsicModeFunction]): The IMFs to plot.
-        time_variable (np.ndarray): The time variable.
-        log_color (bool):              If True, normalize the colors to the log10 of the amplitude.
-        log_freq (bool):               If True display the log10 of the frequencies.
-        fig (matplotlib.figure): Module that provides the top-level Artist, the Figure, which contains all the plot elements.
-        ax (matplotlib.axes.Axes): Contains most of the figure elements: Axis, Tick, Line2D, Text, Polygon, etc., and sets the coordinate system.
-        c_lim (tuple): Set the limit of the color axis. Chooses based on HilbertHuangTransform if None.
-        x_lim (tuple): Set the limit of the x-axis. Chooses based on HilbertHuangTransform if None.
-        y_lim (tuple): Set the limit of the y-axis. Chooses based on HilbertHuangTransform if None.
+        config (HilbertSpectrumConfig): Configuration for the plot.
     """
     if len(imfs) == 0:
         raise ValueError("No IMFs to plot.")
 
-    if max_number_of_imfs:
-        num_imfs = np.min([len(imfs), max_number_of_imfs])
+    if config.max_number_of_imfs:
+        num_imfs = np.min([len(imfs), config.max_number_of_imfs])
     else:
         num_imfs = len(imfs)
 
-    fig = plt.figure() if fig is None else fig
-    ax = plt.subplot2grid((1, 1), (0, 0)) if ax is None else ax
+    fig = plt.figure() if config.fig is None else config.fig
+    ax = plt.subplot2grid((1, 1), (0, 0)) if config.ax is None else config.ax
 
     time_variable = (
         np.arange(len(imfs[0].signal)) / imfs[0].sampling_frequency
-        if time_variable is None
-        else time_variable
+        if config.time_variable is None
+        else config.time_variable
     )
 
     x_lim = [0, time_variable[-1]]
     y_lim = _get_ylim(imfs)
-    c_lim = _get_clim(imfs, min_amplitude_lim)
+    c_lim = _get_clim(imfs, config.min_amplitude_lim)
 
     for imf in imfs[:num_imfs]:
         frequency = imf.instantaneous_frequency
@@ -59,14 +58,14 @@ def plot_hilbert_spectrum(
         if frequency is None:
             continue
 
-        if log_freq:
+        if config.log_freq:
             frequency[frequency <= 0] = None
             frequency = np.log10(frequency)
 
         points = np.array([time_variable, frequency]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-        if log_color:
+        if config.log_color:
             norm = colors.LogNorm(c_lim[0], c_lim[1], clip=True)
         else:
             norm = plt.Normalize(c_lim[0], c_lim[1], clip=True)
@@ -78,11 +77,13 @@ def plot_hilbert_spectrum(
 
     clb = fig.colorbar(ax.collections[-1], aspect=20, fraction=0.1, pad=0.02)
 
-    clb.set_label(f"Amplitude {f'[{amplitude_unit}]' if amplitude_unit else ''}")
+    clb.set_label(
+        f"Amplitude {f'[{config.amplitude_unit}]' if config.amplitude_unit else ''}"
+    )
 
     ax.set_xlim(x_lim)
     ax.set_ylim(y_lim)
-    if log_freq:
+    if config.log_freq:
         ax.set_yscale("log")
 
     ax.set_xlabel("Time (s)")
