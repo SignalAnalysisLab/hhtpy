@@ -52,38 +52,6 @@ fig, ax, clb = plot_hilbert_spectrum(
 ```
 ![Plot Hilbert Spectrum](figs/hilbert_spectrum.png)
 
-
-## API Reference
-
-#### Methods
-
-- **`decompose()`**: Performs the EMD on the input signal, extracting IMFs and the residue.
-
-  #### Parameters
-
-    - **signal** (`np.ndarray`): The input signal to decompose. Must be a one-dimensional NumPy array.
-    - **stopping_criterion** (`Callable[[np.ndarray, int], bool]`, optional): A custom function to determine when to
-      stop the sifting process for an IMF. Defaults to `get_stopping_criterion_fixed_number_of_sifts(15)`
-
-  #### Returns
-
-  - **imfs** (`List[np.ndarray]`): A list containing the extracted IMFs after decomposition.
-  - **residue** (`np.ndarray`): The final residue after extracting all IMFs.
-
-## Stopping Criterion
-
-  - **get_stopping_criterion_fixed_number_of_sifts(int)**: Returns a stopping criterion function that stops the sifting
-    process after a fixed number of sifts.
-
-    #### Parameters
-
-    - **fixed_number_of_sifts** (`int`): The number of sifts to perform before stopping.
-
-    #### Returns
-
-    - **`Callable[[np.ndarray, int], bool]`**: A stopping criterion function that stops the sifting process after the
-      specified number of sifts.
-
 ### Custom Stopping Criterion
 
 You can provide a custom stopping criterion function to control the sifting process. The function should accept the
