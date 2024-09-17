@@ -4,8 +4,8 @@ from typing import Callable
 import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy.ndimage import median_filter
-from hhtpy._emd_utils import find_local_extrema
-from hhtpy.emd import decompose
+from ._emd_utils import find_local_extrema, get_freq_lim
+from .emd import decompose
 
 
 @dataclass
@@ -238,3 +238,61 @@ def hilbert_huang_transform(
         )
         for imf in imfs
     ], residue
+
+
+def marginal_hilbert_spectrum(
+    imfs: list[IntrinsicModeFunction], frequency_bin_size=None
+):
+    """
+    Computes the marginal hilbert spectrum.
+
+    Args:
+        HilbertHuangTransform (class):              Object containing the imf components.
+        frequency_bin_size (float):                 Width of the frequency intervals.
+
+    Returns:
+    frequencies (np.array): Frequency base for marginal Hilbert Spectrum.
+    amplitudes (np.array):  Sum of amplitudes over the frequency base.
+
+    """
+    sampling_frequency = imfs[0].sampling_frequency
+
+    if not frequency_bin_size:
+        frequency_bin_size = sampling_frequency / len(imfs[0].signal)
+
+    min_freq, max_freq = get_freq_lim(imfs)
+
+    frequencies = np.arange(int(max_freq / frequency_bin_size)) * frequency_bin_size
+    amplitudes = np.zeros(len(frequencies))
+
+    for imf in imfs:
+        freq = imf.instantaneous_frequency
+        amp = imf.instantaneous_amplitude
+
+        if len(freq) == 0:
+            continue
+
+        freq_lt = freq < max_freq
+        freq_gt = freq > min_freq
+        freq_cond_index = np.where(np.bitwise_and(freq_gt, freq_lt))[0]
+
+        freq = freq[freq_cond_index]
+        amp = amp[freq_cond_index]
+
+        sort_args = np.argsort(freq)
+        freq = freq[sort_args]
+        amp = amp[sort_args]
+
+        freq_intervals_imf = np.floor(np.divide(freq, frequency_bin_size))
+        freq_intervals_imf = np.array(freq_intervals_imf, dtype="int")
+
+        freq_intervals = np.unique(freq_intervals_imf)
+        range = np.array([freq_intervals])
+        sum_equal = lambda i: np.sum(amp[freq_intervals_imf == i])
+
+        amplitudes_imf = np.apply_along_axis(sum_equal, 0, range)
+        amplitudes[freq_intervals] += amplitudes_imf
+
+    amplitudes = amplitudes / len(imfs[0].signal)
+
+    return frequencies, amplitudes

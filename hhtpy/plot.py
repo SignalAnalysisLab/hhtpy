@@ -1,9 +1,10 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib.collections import LineCollection
-from hhtpy import IntrinsicModeFunction
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from . import IntrinsicModeFunction, marginal_hilbert_spectrum
+from ._emd_utils import get_freq_lim
 
 from typing import Union, Optional, Any
 
@@ -49,8 +50,8 @@ def plot_hilbert_spectrum(
     )
 
     x_lim = [0, time_variable[-1]]
-    y_lim = _get_ylim(imfs)
-    c_lim = _get_clim(imfs, config.min_amplitude_lim)
+    y_lim = get_freq_lim(imfs)
+    c_lim = get_clim(imfs, config.min_amplitude_lim)
 
     for imf in imfs[:num_imfs]:
         frequency = imf.instantaneous_frequency
@@ -92,17 +93,7 @@ def plot_hilbert_spectrum(
     return fig, ax, clb
 
 
-def _get_ylim(imfs):
-    freqs = []
-    for imf in imfs:
-        freq = imf.instantaneous_frequency[~np.isnan(imf.instantaneous_frequency)]
-        freqs.extend([np.min(freq), np.max(freq)])
-
-    freqs = np.array(freqs)
-    return np.min(freqs) * 0.9, np.max(freqs) * 1.1
-
-
-def _get_clim(imfs, min_amplitude):
+def get_clim(imfs, min_amplitude):
     amps = []
     for imf in imfs:
         amp = imf.instantaneous_amplitude[~np.isnan(imf.instantaneous_amplitude)]
@@ -136,12 +127,32 @@ def plot_imfs(
     if max_number_of_imfs:
         num_imfs = np.min([len(imfs), max_number_of_imfs])
 
+    number_of_subplots = num_imfs
+    number_of_subplots += 1 if signal is not None else 0
+    number_of_subplots += 1 if residue is not None else 0
+
     fig, axs = plt.subplots(num_imfs + 2, 1)
     if signal is not None:
-        axs[0].plot(signal) if x_axis is None else axs[0].plot(x_axis, signal)
+        if x_axis is None:
+            axs[0].plot(signal)
+        else:
+            axs[0].plot(x_axis, signal)
     for i in range(num_imfs):
         axs[i + 1].plot(imfs[i]) if x_axis is None else axs[i + 1].plot(x_axis, imfs[i])
     if residue is not None:
         axs[-1].plot(residue) if x_axis is None else axs[-1].plot(x_axis, residue)
 
     return fig, axs
+
+
+def plot_marginal_hilbert_spectrum(
+    imfs: list[IntrinsicModeFunction], fig=None, ax=None
+):
+    fig = plt.figure() if fig is None else fig
+    ax = fig.add_subplot(111) if ax is None else ax
+
+    frequencies, amplitudes = marginal_hilbert_spectrum(imfs)
+    ax.plot(frequencies, amplitudes)
+    ax.set_xlabel("Frequency (Hz)")
+    ax.set_ylabel("Amplitude")
+    return fig, ax
