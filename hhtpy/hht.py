@@ -53,7 +53,9 @@ def calculate_instantaneous_frequency_quadrature(
     return frequency
 
 
-def normalize_imf(imf: np.ndarray, max_attempts: int) -> np.ndarray:
+def normalize_imf(
+    imf: np.ndarray, max_attempts: int = 150, crop_edges: float = 0.01
+) -> np.ndarray:
     """
     Normalize the IMF by iteratively dividing by its instantaneous amplitude spline.
 
@@ -72,10 +74,20 @@ def normalize_imf(imf: np.ndarray, max_attempts: int) -> np.ndarray:
             break
 
         imf /= calculate_instantaneous_amplitude_spline(imf)
-    else:
+
+    if crop_edges > 0:
+        if crop_edges >= 0.5:
+            raise ValueError(
+                "Cannot crop whole signal. Must be less than 0.5, i.e., 50%."
+            )
+
+        crop_size = int(len(imf) * crop_edges)
+        imf[:crop_size] = np.nan
+        imf[-crop_size:] = np.nan
+
+    if np.nanmax(np.abs(imf)) > 1:
         raise ValueError(
-            f"Normalization of the IMF failed after {max_attempts} attempts. "
-            f"Maximum value is still greater than 1 (current max: {np.max(imf):.3f})."
+            "Normalization failed. Maximum absolute value is still greater than 1."
         )
 
     return imf
@@ -109,7 +121,9 @@ def _quadrature_phase(monocomponent_normalized: np.ndarray) -> np.ndarray:
     if not isinstance(monocomponent_normalized, np.ndarray):
         raise ValueError("Input must be a NumPy array.")
 
-    if not np.all(np.abs(monocomponent_normalized) <= 1):
+    if not np.all(
+        np.abs(monocomponent_normalized[~np.isnan(monocomponent_normalized)]) <= 1
+    ):
         raise ValueError("Input values must be normalized between -1 and 1.")
 
     quadrature = _calculate_quadrature(monocomponent_normalized)
@@ -144,7 +158,10 @@ def quadrature_method(
         raise ValueError("Input must be a NumPy array.")
     if not isinstance(sampling_frequency, (int, float)):
         raise ValueError("Sampling frequency must be a float or integer.")
-    if not np.all(np.abs(monocomponent_normalized) <= 1):
+
+    if not np.all(
+        np.abs(monocomponent_normalized[~np.isnan(monocomponent_normalized)]) <= 1
+    ):
         raise ValueError("Input values must be normalized between -1 and 1.")
 
     phase = _quadrature_phase(monocomponent_normalized)
@@ -170,7 +187,7 @@ def _calculate_quadrature(monocomponent: np.ndarray) -> np.ndarray:
     """
     if not isinstance(monocomponent, np.ndarray):
         raise ValueError("Input must be a NumPy array.")
-    if not np.all(np.abs(monocomponent) <= 1):
+    if not np.all(np.abs(monocomponent[~np.isnan(monocomponent)]) <= 1):
         raise ValueError("Input values must be normalized between -1 and 1.")
 
     # Calculate the sign based on the derivative of the signal
