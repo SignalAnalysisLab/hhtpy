@@ -270,3 +270,13 @@ def find_local_extrema(signal: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     minima_indices, _ = find_peaks(-signal, plateau_size=1)
 
     return maxima_indices, minima_indices
+
+
+def get_freq_lim(imfs, padding=0.1):
+    freqs = []
+    for imf in imfs:
+        freq = imf.instantaneous_frequency[~np.isnan(imf.instantaneous_frequency)]
+        freqs.extend([np.min(freq), np.max(freq)])
+
+    freqs = np.array(freqs)
+    return np.min(freqs) * (1 - padding), np.max(freqs) * (1 + padding)

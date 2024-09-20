@@ -26,68 +26,36 @@ Here's a basic example of how to use **hhtpy** to perform EMD on a signal:
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from hhtpy import decompose
-from hhtpy.plot import plot_imfs
+from hhtpy import hilbert_huang_transform
+from hhtpy.plot import plot_imfs, plot_hilbert_spectrum
+
 
 T = 5  # sec
 f_s = 15000  # Hz
 n = np.arange(T * f_s)
 t = n / f_s  # sec
 
-y = (
-        0.3 * np.cos(2 * np.pi * 5 * t ** 2) +
-        2 * np.cos(2 * np.pi * 1 * t) +
-        1 * t
+y = 1 * np.cos(2 * np.pi * 50 * t + 20 * np.sin(2 * np.pi * 0.5 * t)) + 2 * np.cos(
+    2 * np.pi * 20 * t
 )
 
-imfs, residue = decompose(y)
+imfs, residue = hilbert_huang_transform(y, f_s)
 
-fig, axs = plot_imfs(imfs, y, residue, x_axis=t, show_plot=False)
-axs[-1].set_xlabel('Time [s]')
-axs[0].set_ylabel('Original\nSignal')
-axs[0].set_xticks([])
-
-for i in range(1, len(imfs) + 1):
-    axs[i].set_ylabel(f'IMF {i}')
-    axs[i].set_xticks([])
-
-axs[-1].set_ylabel('Residue')
-
-plt.show()
+fig, axs = plot_imfs(imfs, y, residue, t, max_number_of_imfs=2)
 ```
-
 ![Plot of IMFs](figs/imfs.png)
+```python
+fig, ax, clb = plot_hilbert_spectrum(
+    imfs,
+    max_number_of_imfs=2,
+)
+```
+![Plot Hilbert Spectrum](figs/hilbert_spectrum.png)
 
-## API Reference
-
-#### Methods
-
-- **`decompose()`**: Performs the EMD on the input signal, extracting IMFs and the residue.
-
-  #### Parameters
-
-    - **signal** (`np.ndarray`): The input signal to decompose. Must be a one-dimensional NumPy array.
-    - **stopping_criterion** (`Callable[[np.ndarray, int], bool]`, optional): A custom function to determine when to
-      stop the sifting process for an IMF. Defaults to `get_stopping_criterion_fixed_number_of_sifts(15)`
-
-  #### Returns
-
-  - **imfs** (`List[np.ndarray]`): A list containing the extracted IMFs after decomposition.
-  - **residue** (`np.ndarray`): The final residue after extracting all IMFs.
-
-## Stopping Criterion
-
-  - **get_stopping_criterion_fixed_number_of_sifts(int)**: Returns a stopping criterion function that stops the sifting
-    process after a fixed number of sifts.
-
-    #### Parameters
-
-    - **fixed_number_of_sifts** (`int`): The number of sifts to perform before stopping.
-
-    #### Returns
-
-    - **`Callable[[np.ndarray, int], bool]`**: A stopping criterion function that stops the sifting process after the
-      specified number of sifts.
+```python
+fig, ax = plot_marginal_hilbert_spectrum(imfs)
+```
+![Plot marginal Hilbert spectrum](figs/marginal_hilbert_spectrum.png)
 
 ### Custom Stopping Criterion
 
