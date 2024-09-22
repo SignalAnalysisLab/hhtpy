@@ -124,8 +124,9 @@ def plot_imfs(
         else imfs
     )
 
-    if max_number_of_imfs:
-        num_imfs = np.min([len(imfs), max_number_of_imfs])
+    num_imfs = (
+        np.min([len(imfs), max_number_of_imfs]) if max_number_of_imfs else len(imfs)
+    )
 
     number_of_subplots = num_imfs
     number_of_subplots += 1 if signal is not None else 0
