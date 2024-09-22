@@ -35,7 +35,7 @@ class TestEMDAndPlotting(unittest.TestCase):
     def test_plot_imfs(self):
         imfs, residue = decompose(self.y)
 
-        fig, axs = plot_imfs(imfs, self.y, residue, x_axis=self.t, show_plot=False)
+        fig, axs = plot_imfs(imfs, self.y, residue)
 
         self.assertIsInstance(
             fig, plt.Figure, "The output should be a matplotlib Figure object"
