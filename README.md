@@ -9,16 +9,6 @@ part of the Hilbert-Huang Transform (HHT), which is used for analyzing nonlinear
 
 This library was written by **Lars Havstad** and **Geir Kulia**.
 
-## Installation
-
-You can install **hhtpy** using `pip`:
-
-```bash
-pip install hhtpy
-```
-
-*Note: Replace the installation instructions with the actual method if the package is not available on PyPI.*
-
 ## Usage
 
 Here's a basic example of how to use **hhtpy** to perform EMD on a signal:
