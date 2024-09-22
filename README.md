@@ -68,11 +68,6 @@ def custom_stopping_criterion(mode: np.ndarray, total_sifts_performed:int) -> bo
     return True  # or False
 ```
 
-## Authors
-
-- **Lars Havstad**
-- **Geir Kulia**
-
 ## Acknowledgements
 
 We want to express our sincere gratitude to the following individuals for their invaluable contributions and support
@@ -98,10 +93,3 @@ Thank you all for your expertise, time, and mentorship, which made this work pos
 
 Contributions are welcome! If you have suggestions for improvements or find any issues, please open an issue or submit a
 pull request on the GitHub repository.
-
-## Contact
-
-For any questions or inquiries, please contact:
-
-- Lars Havstad: *[lars@sal.no](mailto:lars@sal.no)*
-- Geir Kulia: *[geir@sal.no](mailto:geir@sal.no)*
